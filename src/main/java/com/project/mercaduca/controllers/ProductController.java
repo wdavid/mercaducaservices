@@ -21,7 +21,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 @RestController
@@ -187,8 +186,9 @@ public class ProductController {
         return ResponseEntity.ok("Productos procesados correctamente.");
     }
 
-
-
-
-
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteOwnProduct(@PathVariable Long id) {
+        productService.deleteOwnProduct(id);
+        return ResponseEntity.ok("Producto marcado como eliminado.");
+    }
 }

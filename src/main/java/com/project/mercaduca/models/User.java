@@ -24,13 +24,22 @@ public class User implements UserDetails {
     private Long id;
 
     private String name;
+
     private String lastName;
+
     private String gender;
+
+    @Column(unique = true)
     private String mail;
+
     private String password;
+
     private LocalDate birthDate;
+
     private String faculty;
+
     private String major;
+
     private String entrepeneurKind;
 
     @OneToOne(mappedBy = "owner", cascade = CascadeType.ALL)

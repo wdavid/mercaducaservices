@@ -21,10 +21,6 @@ public class BusinessController {
 
     @PutMapping("/profile")
     public ResponseEntity<String> updateBusinessProfile(
-            @RequestParam("businessName") String businessName,
-            @RequestParam("description") String description,
-            @RequestParam("sector") String sector,
-            @RequestParam("productType") String productType,
             @RequestParam("priceRange") String priceRange,
             @RequestParam("facebook") String facebook,
             @RequestParam("instagram") String instagram,
@@ -38,10 +34,6 @@ public class BusinessController {
             }
 
             BusinessUpdateDTO dto = new BusinessUpdateDTO();
-            dto.setBusinessName(businessName);
-            dto.setDescription(description);
-            dto.setSector(sector);
-            dto.setProductType(productType);
             dto.setPriceRange(priceRange);
             dto.setFacebook(facebook);
             dto.setInstagram(instagram);

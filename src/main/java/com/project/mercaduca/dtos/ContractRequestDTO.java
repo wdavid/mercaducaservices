@@ -1,6 +1,5 @@
 package com.project.mercaduca.dtos;
 
-import com.project.mercaduca.models.User;
 import lombok.Getter;
 import lombok.Setter;
 

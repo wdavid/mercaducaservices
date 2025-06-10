@@ -6,10 +6,9 @@ import com.project.mercaduca.repositories.RoleRepository;
 import com.project.mercaduca.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 public class AdminDataLoader implements CommandLineRunner {
@@ -31,10 +30,11 @@ public class AdminDataLoader implements CommandLineRunner {
     }
 
     @Override
+    @DependsOn("roleDataLoader")
     public void run(String... args) {
         if (!userRepository.existsByMail(adminEmail)) {
             Role adminRole = roleRepository.findByName("ROLE_ADMIN")
-                    .orElseThrow(() -> new RuntimeException("Rol ADMIN no encontrado"));
+                    .orElseThrow(() -> new RuntimeException("Rol ROLE_ADMIN no encontrado"));
 
             User admin = new User();
             admin.setMail(adminEmail);

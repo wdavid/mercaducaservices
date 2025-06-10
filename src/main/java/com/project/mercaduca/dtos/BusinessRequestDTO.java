@@ -3,8 +3,6 @@ package com.project.mercaduca.dtos;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDate;
-
 @Getter @Setter
 public class BusinessRequestDTO {
     private Long id;

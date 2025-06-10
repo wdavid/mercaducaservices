@@ -2,8 +2,6 @@ package com.project.mercaduca.controllers;
 
 import com.project.mercaduca.dtos.FacultyResponseDTO;
 import com.project.mercaduca.dtos.MajorResponseDTO;
-import com.project.mercaduca.models.Faculty;
-import com.project.mercaduca.models.Major;
 import com.project.mercaduca.repositories.FacultyRepository;
 import com.project.mercaduca.repositories.MajorRepository;
 import org.springframework.beans.factory.annotation.Autowired;

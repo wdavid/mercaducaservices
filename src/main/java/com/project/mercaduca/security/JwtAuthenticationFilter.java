@@ -42,6 +42,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         (method.equals("GET") && path.matches("/api/business-requests/gender")) ||
                         (method.equals("GET") && path.matches("/api/business-requests/entrepeneurkind")) ||
                         (method.equals("GET") && path.matches("/api/business-requests/approved-summary")) ||
+                        (method.equals("GET") && path.matches("/api/category")) ||
                         (method.equals("GET") && path.matches("/api/major")) ||
                         (method.equals("GET") && path.matches("/api/major/\\d+/majors"));
 

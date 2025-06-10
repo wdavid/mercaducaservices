@@ -7,7 +7,6 @@ import com.project.mercaduca.repositories.MajorRepository;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Component

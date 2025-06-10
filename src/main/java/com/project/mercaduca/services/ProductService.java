@@ -50,44 +50,13 @@ public class ProductService {
     @Autowired
     private CategoryRepository categoryRepository;
 
-    /*
-    public void createProduct(ProductCreateDTO dto, Long businessId) {
-        Business business = businessRepository.findById(businessId)
-                .orElseThrow(() -> new RuntimeException("Business no encontrado"));
-
-        Category category = categoryRepository.findById(dto.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
-
-        Product product = new Product();
-        product.setName(dto.getName());
-        product.setDescription(dto.getDescription());
-        product.setStock(dto.getStock());
-        product.setUrlImage(dto.getUrlImage());
-        product.setStatus("PENDIENTE");
-        product.setBusiness(business);
-        product.setCategory(category);
-        product = productRepository.save(product);
-
-        ProductPrice price = new ProductPrice();
-        price.setPrice(roundPrice(dto.getPrice()));
-        price.setStartDate(LocalDate.now());
-        price.setProduct(product);
-        productPriceRepository.save(price);
-
-        ProductApproval approval = new ProductApproval();
-        approval.setStatus("PENDIENTE");
-        approval.setReviewDate(null);
-        approval.setRemarks(null);
-        approval.setProduct(product);
-        productApprovalRepository.save(approval);
-    }*/
     public void createProduct(ProductCreateDTO dto) {
         User user = authService.getAuthenticatedUser();
 
         Business business = businessRepository.findByOwner(user)
                 .orElseThrow(() -> new RuntimeException("El usuario no tiene un negocio asociado"));
 
-        long productCount = productRepository.countByBusiness(business);
+        long productCount = productRepository.countByBusinessAndStatusNot(business, "ELIMINADO");
         if (productCount >= 7) {
             throw new MaxProductsReachedException("No se pueden crear más de 7 productos por usuario");
         }
@@ -193,12 +162,6 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
-
-    /*public List<Product> getProductsByUser(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow();
-        return productRepository.findByUser(user);
-    }*/
-
     public List<ProductResponseDTO> getProductsByBusiness(Long businessId) {
         Business business = businessRepository.findById(businessId)
                 .orElseThrow(() -> new RuntimeException("Negocio no encontrado"));
@@ -221,6 +184,10 @@ public class ProductService {
     public BusinessWithProductsDTO getBusinessWithApprovedProducts(Long businessId) {
         Business business = businessRepository.findById(businessId)
                 .orElseThrow(() -> new RuntimeException("Negocio no encontrado"));
+
+        if ("ELIMINADO".equalsIgnoreCase(business.getStatus())) {
+            throw new RuntimeException("Este negocio ha sido eliminado");
+        }
 
         List<Product> approvedProducts = productRepository.findByBusinessAndStatus(business, "APROBADO");
 
@@ -267,6 +234,22 @@ public class ProductService {
                 .orElse(null);
     }
 
+    @Transactional
+    public void deleteOwnProduct(Long productId) {
+        User user = authService.getAuthenticatedUser();
 
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+
+        Business userBusiness = businessRepository.findByOwner(user)
+                .orElseThrow(() -> new RuntimeException("El usuario no tiene un negocio asociado"));
+
+        if (!product.getBusiness().equals(userBusiness)) {
+            throw new RuntimeException("No tienes permiso para eliminar este producto.");
+        }
+
+        product.setStatus("ELIMINADO");
+        productRepository.save(product);
+    }
 
 }

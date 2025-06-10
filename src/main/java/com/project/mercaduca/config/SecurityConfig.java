@@ -55,7 +55,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/business-requests").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/logout").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/category").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/category").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/category").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/products").hasRole("EMPRENDEDOR")
                         .requestMatchers(HttpMethod.PATCH, "/api/products/*/review").hasRole("ADMIN")
@@ -68,6 +68,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/major/*/majors").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/contract/create").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/contract/payment").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/admin/products/*").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/admin/business/*").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/products/*").hasRole("EMPRENDEDOR")
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
@@ -83,7 +86,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:4200"));
+        config.setAllowedOrigins(List.of("http://localhost:4200", "https://mercaduca-front.vercel.app"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);

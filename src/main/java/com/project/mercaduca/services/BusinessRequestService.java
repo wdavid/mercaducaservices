@@ -7,11 +7,10 @@ import com.project.mercaduca.models.BusinessRequest;
 import com.project.mercaduca.models.User;
 import com.project.mercaduca.repositories.BusinessRepository;
 import com.project.mercaduca.repositories.BusinessRequestRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import com.project.mercaduca.repositories.RoleRepository;
 import com.project.mercaduca.repositories.UserRepository;
-import com.project.mercaduca.services.EmailService;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -44,6 +43,19 @@ public class BusinessRequestService {
     }
 
     public BusinessRequest createBusinessRequest(BusinessRequestCreateDTO dto) {
+        if (userRepository.existsByMail(dto.getUserEmail())) {
+            throw new IllegalArgumentException("Ya existe un usuario registrado con este correo.");
+        }
+
+        boolean emailYaSolicitado = businessRequestRepository.existsByUserEmailAndStatusIn(
+                dto.getUserEmail(),
+                List.of("PENDIENTE", "APROBADO")
+        );
+
+        if (emailYaSolicitado) {
+            throw new IllegalArgumentException("Ya existe una solicitud activa con este correo.");
+        }
+
         BusinessRequest request = new BusinessRequest();
 
         request.setUrlLogo(dto.getUrlLogo());
@@ -70,6 +82,7 @@ public class BusinessRequestService {
 
         return businessRequestRepository.save(request);
     }
+
 
     public List<BusinessRequest> getAllBusinessRequests() {
         return businessRequestRepository.findAll();
