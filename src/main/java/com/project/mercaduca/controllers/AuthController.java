@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 
 @RestController
 @RequestMapping("/api/auth")
@@ -48,7 +50,7 @@ public class AuthController {
 
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-        return ResponseEntity.ok("Inicio de sesión exitoso");
+        return ResponseEntity.ok(Map.of("token", jwt));
     }
 
 
