@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -88,11 +89,19 @@ public class BusinessRequestController {
 
             businessRequestService.createBusinessRequest(dto);
 
-            return ResponseEntity.ok("Solicitud enviada correctamente.");
+            return ResponseEntity.ok(Map.of("message", "Solicitud enviada correctamente."));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error al crear solicitud: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Ocurrió un error inesperado al crear la solicitud."));
         }
     }
+
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")

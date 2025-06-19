@@ -71,7 +71,7 @@ public class AuthController {
                 .maxAge(0)
                 .build();
         response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-        return ResponseEntity.ok("Cierre de sesión exitoso");
+        return ResponseEntity.ok(Map.of("message",  "Cierre de sesión exitoso"));
     }
 
 }

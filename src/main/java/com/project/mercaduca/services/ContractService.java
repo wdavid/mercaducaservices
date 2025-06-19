@@ -141,9 +141,6 @@ public class ContractService {
             case "TRIMESTRAL":
                 nuevaFecha = contrato.getNextPaymentDate().plusMonths(3);
                 break;
-            case "SEMESTRAL":
-                nuevaFecha = contrato.getNextPaymentDate().plusMonths(6);
-                break;
             default:
                 throw new IllegalStateException("Frecuencia de pago desconocida");
         }
