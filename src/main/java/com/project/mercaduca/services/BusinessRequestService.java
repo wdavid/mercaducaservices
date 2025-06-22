@@ -192,4 +192,8 @@ public class BusinessRequestService {
     public List<BusinessSummaryDTO> getApprovedBusinessSummaries() {
         return businessRequestRepository.findApprovedBusinessSummaries();
     }
+
+    public void deleteRequest(Long requestId) {
+        businessRequestRepository.deleteById(requestId);
+    }
 }

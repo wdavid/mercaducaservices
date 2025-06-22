@@ -151,4 +151,11 @@ public class BusinessRequestController {
     public List<BusinessSummaryDTO> getApprovedBusinessSummaries() {
         return businessRequestService.getApprovedBusinessSummaries();
     }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public void deleteRequest(@PathVariable Long id) {
+        businessRequestService.deleteRequest(id);
+    }
+
 }

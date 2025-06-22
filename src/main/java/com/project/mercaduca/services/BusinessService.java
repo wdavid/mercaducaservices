@@ -1,12 +1,17 @@
 package com.project.mercaduca.services;
 
+import com.project.mercaduca.dtos.BusinessApprovedDTO;
 import com.project.mercaduca.dtos.BusinessRequestDTO;
 import com.project.mercaduca.dtos.BusinessUpdateDTO;
 import com.project.mercaduca.models.Business;
 import com.project.mercaduca.models.User;
 import com.project.mercaduca.repositories.BusinessRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class BusinessService {

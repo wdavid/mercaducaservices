@@ -1,13 +1,17 @@
 package com.project.mercaduca.controllers;
 
+import com.project.mercaduca.dtos.BusinessApprovedDTO;
 import com.project.mercaduca.dtos.BusinessRequestDTO;
 import com.project.mercaduca.dtos.BusinessUpdateDTO;
 import com.project.mercaduca.services.BusinessService;
 import com.project.mercaduca.services.CloudinaryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/business")
@@ -52,4 +56,5 @@ public class BusinessController {
     public ResponseEntity<BusinessRequestDTO> getMyBusiness() {
         return ResponseEntity.ok(businessService.getBusinessOfAuthenticatedUser());
     }
+
 }
