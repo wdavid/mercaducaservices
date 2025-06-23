@@ -1,8 +1,6 @@
 package com.project.mercaduca.controllers;
 
-import com.project.mercaduca.dtos.ProductApprovalRequestDTO;
-import com.project.mercaduca.dtos.ProductCreateDTO;
-import com.project.mercaduca.dtos.ProductReviewDTO;
+import com.project.mercaduca.dtos.*;
 import com.project.mercaduca.models.Product;
 import com.project.mercaduca.models.ProductApproval;
 import com.project.mercaduca.models.User;
@@ -45,30 +43,6 @@ public class ProductController {
     @Autowired
     private EmailService emailService;
 
-    /*
-    @PostMapping
-    @PreAuthorize("hasRole('EMPRENDEDOR')")
-    public ResponseEntity<?> createProduct(
-            @RequestParam("image") MultipartFile image,
-            @RequestParam("name") String name,
-            @RequestParam("description") String description,
-            @RequestParam("stock") int stock,
-            @RequestParam("categoryId") Long categoryId,
-            @RequestParam("price") Double price,
-            @RequestParam("businessId") Long businessId
-    ) {
-        try {
-            String imageUrl = cloudinaryService.uploadImage(image);
-
-            ProductCreateDTO dto = new ProductCreateDTO(name, description, stock, imageUrl, categoryId, price);
-
-            productService.createProduct(dto, businessId);
-
-            return ResponseEntity.ok("Producto enviado para aprobación.");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error al crear producto: " + e.getMessage());
-        }
-    }*/
     @PostMapping
     @PreAuthorize("hasRole('EMPRENDEDOR')")
     public ResponseEntity<?> createProduct(
@@ -190,5 +164,61 @@ public class ProductController {
     public ResponseEntity<?> deleteOwnProduct(@PathVariable Long id) {
         productService.deleteOwnProduct(id);
         return ResponseEntity.ok("Producto marcado como eliminado.");
+    }
+
+    @PatchMapping(value = "/update/{id}", consumes = "multipart/form-data")
+    @PreAuthorize("hasRole('EMPRENDEDOR')")
+    public ResponseEntity<?> updateProductWithImage(
+            @PathVariable Long id,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam(value = "stock", required = false) Integer stock,
+            @RequestParam(value = "image", required = false) MultipartFile image
+    ) {
+        try {
+            String imageUrl = null;
+
+            if (image != null && !image.isEmpty()) {
+                imageUrl = cloudinaryService.uploadImage(image);
+            }
+
+            ProductUpdateRequestDTO dto = new ProductUpdateRequestDTO();
+            dto.setDescription(description);
+            dto.setStock(stock);
+            dto.setUrlImage(imageUrl);
+
+            productService.updateProductFields(id, dto);
+            return ResponseEntity.noContent().build();
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al actualizar producto: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/filter")
+    public ResponseEntity<?> filterProducts(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String categoryName,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice
+    ) {
+        return ResponseEntity.ok(productService.filterProducts(status, categoryName, minPrice, maxPrice));
+    }
+
+    @GetMapping("/my-products")
+    @PreAuthorize("hasRole('EMPRENDEDOR')")
+    public ResponseEntity<?> getMyProducts(
+            @RequestParam(required = false) String status
+    ) {
+        return ResponseEntity.ok(productService.getProductsByAuthenticatedUserAndStatus(status));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getProductById(@PathVariable Long id) {
+        try {
+            ProductResponseDTO product = productService.getProductById(id);
+            return ResponseEntity.ok(product);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
     }
 }

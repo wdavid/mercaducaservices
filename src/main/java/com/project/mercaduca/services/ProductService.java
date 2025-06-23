@@ -1,9 +1,6 @@
 package com.project.mercaduca.services;
 
-import com.project.mercaduca.dtos.BusinessWithProductsDTO;
-import com.project.mercaduca.dtos.ProductCreateDTO;
-import com.project.mercaduca.dtos.ProductPriceResponseDTO;
-import com.project.mercaduca.dtos.ProductResponseDTO;
+import com.project.mercaduca.dtos.*;
 import com.project.mercaduca.exceptions.MaxProductsReachedException;
 import com.project.mercaduca.models.*;
 import com.project.mercaduca.repositories.*;
@@ -250,6 +247,115 @@ public class ProductService {
 
         product.setStatus("ELIMINADO");
         productRepository.save(product);
+    }
+
+    @Transactional
+    public void updateProductFields(Long productId, ProductUpdateRequestDTO dto) {
+        User user = authService.getAuthenticatedUser();
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+
+        Business userBusiness = businessRepository.findByOwner(user)
+                .orElseThrow(() -> new RuntimeException("El usuario no tiene un negocio asociado"));
+
+        if (!product.getBusiness().equals(userBusiness)) {
+            throw new RuntimeException("No tienes permiso para eliminar este producto.");
+        }
+
+        if (dto.getDescription() != null) {
+            product.setDescription(dto.getDescription());
+        }
+
+        if (dto.getUrlImage() != null) {
+            product.setUrlImage(dto.getUrlImage());
+        }
+
+        if (dto.getStock() != null) {
+            product.setStock(dto.getStock());
+        }
+
+        productRepository.save(product);
+    }
+
+    public List<ProductResponseDTO> filterProducts(String status, String categoryName, Double minPrice, Double maxPrice) {
+        List<Product> products = productRepository.findAll();
+
+        return products.stream()
+                .filter(product -> {
+                    boolean matchesStatus = (status == null || product.getStatus().equalsIgnoreCase(status));
+                    boolean matchesCategory = (categoryName == null || product.getCategory().getName().equalsIgnoreCase(categoryName));
+                    ProductPrice currentPrice = productPriceRepository
+                            .findTopByProductIdAndEndDateIsNullOrderByStartDateDesc(product.getId())
+                            .orElse(null);
+                    boolean matchesPrice = true;
+                    if (currentPrice != null) {
+                        double price = currentPrice.getPrice();
+                        if (minPrice != null && price < minPrice) return false;
+                        if (maxPrice != null && price > maxPrice) return false;
+                    } else {
+                        matchesPrice = (minPrice == null && maxPrice == null);
+                    }
+
+                    return matchesStatus && matchesCategory && matchesPrice;
+                })
+                .map(product -> new ProductResponseDTO(
+                        product.getId(),
+                        product.getName(),
+                        product.getDescription(),
+                        product.getStock(),
+                        product.getStatus(),
+                        product.getUrlImage(),
+                        product.getBusiness().getOwner().getName(),
+                        product.getCategory().getName(),
+                        getCurrentPriceDTO(product.getId())
+                ))
+                .collect(Collectors.toList());
+    }
+
+    public List<ProductResponseDTO> getProductsByAuthenticatedUserAndStatus(String status) {
+        User user = authService.getAuthenticatedUser();
+
+        Business business = businessRepository.findByOwner(user)
+                .orElseThrow(() -> new RuntimeException("El usuario no tiene un negocio asociado"));
+
+        List<Product> products = productRepository.findByBusiness(business);
+        if (status != null && !status.isBlank()) {
+            products = products.stream()
+                    .filter(p -> p.getStatus().equalsIgnoreCase(status))
+                    .collect(Collectors.toList());
+        }
+
+        return products.stream()
+                .map(product -> new ProductResponseDTO(
+                        product.getId(),
+                        product.getName(),
+                        product.getDescription(),
+                        product.getStock(),
+                        product.getStatus(),
+                        product.getUrlImage(),
+                        product.getBusiness().getOwner().getName(),
+                        product.getCategory().getName(),
+                        getCurrentPriceDTO(product.getId())
+                ))
+                .collect(Collectors.toList());
+    }
+
+    public ProductResponseDTO getProductById(Long productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+
+        return new ProductResponseDTO(
+                product.getId(),
+                product.getName(),
+                product.getDescription(),
+                product.getStock(),
+                product.getStatus(),
+                product.getUrlImage(),
+                product.getBusiness().getOwner().getName(),
+                product.getCategory().getName(),
+                getCurrentPriceDTO(product.getId())
+        );
     }
 
 }
