@@ -48,7 +48,7 @@ public class AdminBusinessService {
         return businesses.stream().map(business -> {
             User owner = business.getOwner();
             return new BusinessApprovedDTO(
-                    business.getId(),
+                    business.getOwner().getId(),
                     business.getUrlLogo(),
                     business.getBusinessName(),
                     owner.getName() + " " + owner.getLastName(),
@@ -72,6 +72,7 @@ public class AdminBusinessService {
         if (user.getBusiness() != null) {
             dto.setBusinessName(user.getBusiness().getBusinessName());
             dto.setPhone(user.getBusiness().getPhone());
+            dto.setUrlLogo(user.getBusiness().getUrlLogo());
 
             User owner = user.getBusiness().getOwner();
             if (owner != null) {

@@ -9,6 +9,7 @@ import java.time.LocalDate;
 public class ContractRequestDTO {
     private String businessName;
     private String phone;
+    private String urlLogo;
 
 
     private String ownerName;

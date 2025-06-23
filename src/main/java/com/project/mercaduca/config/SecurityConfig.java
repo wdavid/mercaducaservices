@@ -47,6 +47,7 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/api/business-requests").permitAll()
+                        .requestMatchers(HttpMethod.PATCH, "/api/products/update/*").hasRole("EMPRENDEDOR")
                         .requestMatchers(HttpMethod.GET, "/api/business-requests").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/business-requests/*").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/business-requests/gender").permitAll()
@@ -71,6 +72,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/contract/payment").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/admin/products/*").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/admin/business/*").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/admin/businesses/disable/*").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/admin/business/*").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/products/*").hasRole("EMPRENDEDOR")
                         .requestMatchers(
