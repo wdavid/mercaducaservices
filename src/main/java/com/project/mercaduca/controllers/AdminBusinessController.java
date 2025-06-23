@@ -28,10 +28,13 @@ public class AdminBusinessController {
 
     @GetMapping("/approved")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<BusinessApprovedDTO>> getApprovedBusinesses() {
-        List<BusinessApprovedDTO> approvedList = adminBusinessService.getBusinessApproved();
-        return ResponseEntity.ok(approvedList);
+    public ResponseEntity<List<BusinessApprovedDTO>> getFilteredBusinesses(
+            @RequestParam(required = false) List<String> statuses,
+            @RequestParam(required = false) Boolean tienenContrato
+    ) {
+        return ResponseEntity.ok(adminBusinessService.getFilteredBusinesses(statuses, tienenContrato));
     }
+
 
     @GetMapping("/contracts/{userId}")
     @PreAuthorize("hasRole('ADMIN')")

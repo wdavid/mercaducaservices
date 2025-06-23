@@ -42,9 +42,10 @@ public class AdminBusinessService {
     }
 
     @Transactional
-    public List<BusinessApprovedDTO> getBusinessApproved() {
-        List<Business> approvedBusinesses = businessRepository.findByStatus("ACTIVO");
-        return approvedBusinesses.stream().map(business -> {
+    public List<BusinessApprovedDTO> getFilteredBusinesses(List<String> statuses, Boolean tienenContrato) {
+        List<Business> businesses = businessRepository.findByStatusesAndContrato(statuses, tienenContrato);
+
+        return businesses.stream().map(business -> {
             User owner = business.getOwner();
             return new BusinessApprovedDTO(
                     business.getId(),
