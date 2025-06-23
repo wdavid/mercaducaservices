@@ -9,6 +9,10 @@ import com.project.mercaduca.repositories.BusinessRepository;
 import com.project.mercaduca.repositories.BusinessRequestRepository;
 import com.project.mercaduca.repositories.RoleRepository;
 import com.project.mercaduca.repositories.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -195,5 +199,23 @@ public class BusinessRequestService {
 
     public void deleteRequest(Long requestId) {
         businessRequestRepository.deleteById(requestId);
+    }
+
+    public Page<BusinessRequest> getBusinessRequestsByStatusAndOrder(
+            int page,
+            int size,
+            String status,
+            String sortDirection
+    ) {
+        Sort sort = Sort.by("submissionDate");
+        sort = "desc".equalsIgnoreCase(sortDirection) ? sort.descending() : sort.ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        if (status == null || status.isBlank()) {
+            return businessRequestRepository.findAll(pageable);
+        }
+
+        return businessRequestRepository.findByStatusContainingIgnoreCase(status, pageable);
     }
 }

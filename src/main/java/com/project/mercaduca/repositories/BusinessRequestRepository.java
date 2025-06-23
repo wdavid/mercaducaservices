@@ -3,6 +3,8 @@ package com.project.mercaduca.repositories;
 
 import com.project.mercaduca.dtos.BusinessSummaryDTO;
 import com.project.mercaduca.models.BusinessRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -16,4 +18,5 @@ public interface BusinessRequestRepository extends JpaRepository<BusinessRequest
     @Query("SELECT new com.project.mercaduca.dtos.BusinessSummaryDTO(b.id, b.businessName, b.urlLogo) FROM Business b WHERE b.status = 'ACTIVO'")
     List<BusinessSummaryDTO> findApprovedBusinessSummaries();
     boolean existsByUserEmailAndStatusIn(String userEmail, List<String> status);
+    Page<BusinessRequest> findByStatusContainingIgnoreCase(String status, Pageable pageable);
 }

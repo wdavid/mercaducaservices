@@ -10,6 +10,7 @@ import com.project.mercaduca.models.BusinessRequest;
 import com.project.mercaduca.services.BusinessRequestService;
 import com.project.mercaduca.services.CloudinaryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -156,6 +157,18 @@ public class BusinessRequestController {
     @PreAuthorize("hasRole('ADMIN')")
     public void deleteRequest(@PathVariable Long id) {
         businessRequestService.deleteRequest(id);
+    }
+
+    @GetMapping("/filter")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Page<BusinessRequest>> getBusinessRequests(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "desc") String sortDirection
+    ) {
+        Page<BusinessRequest> requests = businessRequestService.getBusinessRequestsByStatusAndOrder(page, size, status, sortDirection);
+        return ResponseEntity.ok(requests);
     }
 
 }
