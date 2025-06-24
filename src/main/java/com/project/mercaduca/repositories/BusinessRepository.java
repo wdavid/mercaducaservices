@@ -43,4 +43,5 @@ public interface BusinessRepository extends JpaRepository<Business, Long> {
             @Param("statuses") List<String> statuses,
             @Param("tienenContrato") Boolean tienenContrato
     );
+    Optional<Business> findByOwnerId(Long ownerId);
 }

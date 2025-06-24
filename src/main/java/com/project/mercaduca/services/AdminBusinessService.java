@@ -99,9 +99,9 @@ public class AdminBusinessService {
     }
 
     @Transactional
-    public void updateBusinessStatus(Long businessId, String newStatus) {
-        Business business = businessRepository.findById(businessId)
-                .orElseThrow(() -> new RuntimeException("Negocio no encontrado"));
+    public void updateBusinessStatusByOwnerId(Long ownerId, String newStatus) {
+        Business business = businessRepository.findByOwnerId(ownerId)
+                .orElseThrow(() -> new RuntimeException("Negocio no encontrado para el usuario"));
 
         business.setStatus(newStatus.toUpperCase());
         businessRepository.save(business);

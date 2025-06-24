@@ -49,7 +49,7 @@ public class AdminBusinessController {
             @PathVariable Long businessId,
             @RequestBody BusinessStatusUpdateDTO statusDTO) {
 
-        adminBusinessService.updateBusinessStatus(businessId, statusDTO.getStatus());
+        adminBusinessService.updateBusinessStatusByOwnerId(businessId, statusDTO.getStatus());
         return ResponseEntity.noContent().build();
     }
 }

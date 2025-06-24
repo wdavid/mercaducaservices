@@ -1,10 +1,12 @@
 package com.project.mercaduca.services;
 
+import com.project.mercaduca.dtos.RoleResponseDTO;
 import com.project.mercaduca.dtos.UserResponseDTO;
 import com.project.mercaduca.dtos.UserUpdateDTO;
 import com.project.mercaduca.models.User;
 import com.project.mercaduca.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -47,5 +49,14 @@ public class UserService {
         return dto;
     }
 
+    public RoleResponseDTO getCurrentUserRole() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByMail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        RoleResponseDTO dto = new RoleResponseDTO();
+        dto.setRole(user.getRole().getName());
+        return dto;
+    }
 
 }

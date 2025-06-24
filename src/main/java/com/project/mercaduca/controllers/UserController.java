@@ -1,5 +1,6 @@
 package com.project.mercaduca.controllers;
 
+import com.project.mercaduca.dtos.RoleResponseDTO;
 import com.project.mercaduca.dtos.UserResponseDTO;
 import com.project.mercaduca.dtos.UserUpdateDTO;
 import com.project.mercaduca.services.UserService;
@@ -23,5 +24,11 @@ public class UserController {
     public ResponseEntity<UserResponseDTO> getCurrentUser() {
         UserResponseDTO user = userService.getCurrentUserProfile();
         return ResponseEntity.ok(user);
+    }
+
+    @GetMapping("/profile/role")
+    public ResponseEntity<RoleResponseDTO> getCurrentUserRole() {
+        RoleResponseDTO role = userService.getCurrentUserRole();
+        return ResponseEntity.ok(role);
     }
 }
