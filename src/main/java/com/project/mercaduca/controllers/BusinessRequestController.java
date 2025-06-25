@@ -48,7 +48,7 @@ public class BusinessRequestController {
 
     @PostMapping
     public ResponseEntity<?> createRequest(
-            @RequestParam("logo") MultipartFile logo,
+            @RequestParam(value = "logo", required = false) MultipartFile logo,
             @RequestParam("businessName") String businessName,
             @RequestParam("description") String description,
             @RequestParam("sector") String sector,
@@ -67,7 +67,7 @@ public class BusinessRequestController {
             @RequestParam("entrepeneurKind") String entrepeneurKind
     ) {
         try {
-            String logoUrl = cloudinaryService.uploadImage(logo);
+            String logoUrl = (logo != null && !logo.isEmpty()) ? cloudinaryService.uploadImage(logo) : null;
 
             BusinessRequestCreateDTO dto = new BusinessRequestCreateDTO();
             dto.setBusinessName(businessName);
@@ -104,6 +104,7 @@ public class BusinessRequestController {
     }
 
 
+
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<BusinessRequestResponseDTO>> getAllRequests() {
@@ -127,6 +128,7 @@ public class BusinessRequestController {
             dto.setUserLastName(req.getUserLastName());
             dto.setUserEmail(req.getUserEmail());
             dto.setEntrepeneurKind(req.getEntrepeneurKind());
+            dto.setUserGender(req.getUserGender());
             return dto;
         }).collect(Collectors.toList());
 
@@ -193,6 +195,7 @@ public class BusinessRequestController {
         dto.setUserLastName(request.getUserLastName());
         dto.setUserEmail(request.getUserEmail());
         dto.setEntrepeneurKind(request.getEntrepeneurKind());
+        dto.setUserGender(request.getUserGender());
 
         return ResponseEntity.ok(dto);
     }

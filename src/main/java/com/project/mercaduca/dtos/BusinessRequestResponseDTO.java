@@ -26,4 +26,5 @@ public class BusinessRequestResponseDTO {
     private String userLastName;
     private String userEmail;
     private String entrepeneurKind;
+    private String userGender;
 }
