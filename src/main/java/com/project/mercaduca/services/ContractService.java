@@ -1,6 +1,8 @@
 package com.project.mercaduca.services;
 
 import com.project.mercaduca.dtos.ContractRequestDTO;
+import com.project.mercaduca.dtos.PaymentDTO;
+import com.project.mercaduca.dtos.PaymentSimpleDTO;
 import com.project.mercaduca.models.Contract;
 import com.project.mercaduca.models.Payment;
 import com.project.mercaduca.models.User;
@@ -12,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -64,7 +67,7 @@ public class ContractService {
         return dto;
     }
 
-    public Contract createContract(Long userId, Double amount, String kindOfPayment, String paymentMethod, String paymentFrequency) {
+    public Contract createContract(Long userId, Double amount, String paymentMethod, String paymentFrequency) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
@@ -74,80 +77,120 @@ public class ContractService {
         }
 
         LocalDate startDate = LocalDate.now();
-        LocalDate endDate = startDate.plusMonths(6);
-
-        LocalDate nextPaymentDate;
-
-        switch (paymentFrequency.toUpperCase()) {
-            case "MENSUAL":
-                nextPaymentDate = startDate.plusMonths(1);
-                break;
-            case "TRIMESTRAL":
-                nextPaymentDate = startDate.plusMonths(3);
-                break;
-            case "SEMESTRAL":
-                nextPaymentDate = startDate.plusMonths(6);
-                break;
-            default:
-                throw new IllegalArgumentException("Frecuencia de pago no válida");
-        }
-
+        LocalDate endDate = startDate.plusMonths(3);
         Contract contract = new Contract();
         contract.setUser(user);
         contract.setStartDate(startDate);
         contract.setEndDate(endDate);
         contract.setStatus("ACTIVO");
         contract.setRenewalRequested(false);
-        contract.setNextPaymentDate(nextPaymentDate);
         contract.setPaymentFrequency(paymentFrequency.toUpperCase());
 
         contractRepository.save(contract);
 
-        Payment payment = new Payment();
-        payment.setUser(user);
-        payment.setDate(startDate);
-        payment.setAmount(amount);
-        payment.setKindOfPayment(kindOfPayment);
-        payment.setPaymentMethod(paymentMethod);
-        payment.setStatus("PAGADO");
+        Payment pagoInicial = new Payment();
+        pagoInicial.setUser(user);
+        pagoInicial.setDate(startDate);
+        pagoInicial.setExpectedDate(startDate);
+        pagoInicial.setAmount(amount);
+        pagoInicial.setPaymentMethod(paymentMethod);
+        pagoInicial.setStatus("PAGADO");
+        pagoInicial.setKindOfPayment(paymentFrequency.toUpperCase());
+        paymentRepository.save(pagoInicial);
 
-        paymentRepository.save(payment);
+        if (paymentFrequency.equalsIgnoreCase("MENSUAL")) {
+            for (int i = 1; i < 3; i++) {
+                LocalDate expected = startDate.plusMonths(i);
+                Payment pago = new Payment();
+                pago.setUser(user);
+                pago.setExpectedDate(expected);
+                pago.setAmount(amount);
+                pago.setStatus("PENDIENTE");
+                pago.setKindOfPayment(paymentFrequency.toUpperCase());
+                paymentRepository.save(pago);
+            }
+
+            contract.setNextPaymentDate(startDate.plusMonths(1));
+
+        } else if (paymentFrequency.equalsIgnoreCase("TRIMESTRAL")) {
+            contract.setNextPaymentDate(null);
+        } else {
+            throw new IllegalArgumentException("Frecuencia de pago no válida");
+        }
+
+        contractRepository.save(contract);
 
         return contract;
     }
 
-    public void registrarPago(Long userId, Double amount, String metodo, String tipo) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+    public void registrarPagoAdmin(Long paymentId, String metodo) {
+        Payment pago = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new RuntimeException("Pago no encontrado"));
 
-        Contract contrato = contractRepository.findByUser(user)
-                .orElseThrow(() -> new RuntimeException("Contrato no encontrado"));
+        if ("PAGADO".equalsIgnoreCase(pago.getStatus())) {
+            throw new IllegalStateException("El pago ya fue registrado previamente");
+        }
 
-        Payment pago = new Payment();
-        pago.setUser(user);
         pago.setDate(LocalDate.now());
-        pago.setAmount(amount);
         pago.setPaymentMethod(metodo);
-        pago.setKindOfPayment(tipo);
         pago.setStatus("PAGADO");
 
         paymentRepository.save(pago);
 
-        LocalDate nuevaFecha;
-        switch (contrato.getPaymentFrequency()) {
-            case "MENSUAL":
-                nuevaFecha = contrato.getNextPaymentDate().plusMonths(1);
-                break;
-            case "TRIMESTRAL":
-                nuevaFecha = contrato.getNextPaymentDate().plusMonths(3);
-                break;
-            default:
-                throw new IllegalStateException("Frecuencia de pago desconocida");
-        }
+        User user = pago.getUser();
+        Contract contrato = contractRepository.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("Contrato no encontrado"));
 
-        contrato.setNextPaymentDate(nuevaFecha);
+        LocalDate nextPendingDate = paymentRepository.findByUserOrderByExpectedDateAsc(user).stream()
+                .filter(p -> "PENDIENTE".equalsIgnoreCase(p.getStatus()))
+                .map(Payment::getExpectedDate)
+                .findFirst()
+                .orElse(null);
+
+        contrato.setNextPaymentDate(nextPendingDate);
         contractRepository.save(contrato);
     }
+
+
+
+    public List<PaymentSimpleDTO> getPendingPaymentsForAuthenticatedUser() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User user = userRepository.findByMail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        List<Payment> pagosPendientes = paymentRepository.findByUserOrderByExpectedDateAsc(user);
+
+        return pagosPendientes.stream().map(p -> {
+            PaymentSimpleDTO dto = new PaymentSimpleDTO();
+            dto.setId(p.getId());
+            dto.setPaymentMethod(p.getPaymentMethod());
+            dto.setStatus(p.getStatus());
+            dto.setExpectedDate(p.getExpectedDate());
+            return dto;
+        }).toList();
+    }
+
+
+    public List<PaymentDTO> getPaymentsByUserId(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        List<Payment> pagos = paymentRepository.findByUserOrderByExpectedDateAsc(user);
+
+        return pagos.stream().map(p -> {
+            PaymentDTO dto = new PaymentDTO();
+            dto.setId(p.getId());
+            dto.setDate(p.getDate());
+            dto.setExpectedDate(p.getExpectedDate());
+            dto.setAmount(p.getAmount());
+            dto.setStatus(p.getStatus());
+            dto.setPaymentMethod(p.getPaymentMethod());
+            dto.setKindOfPayment(p.getKindOfPayment());
+            return dto;
+        }).toList();
+    }
+
 
 
 }

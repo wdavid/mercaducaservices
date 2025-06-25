@@ -7,7 +7,6 @@ import lombok.Setter;
 public class ContractCreateDTO {
     private Long userId;
     private Double amount;
-    private String kindOfPayment;
     private String paymentMethod;
     private String paymentFrequency;
 }

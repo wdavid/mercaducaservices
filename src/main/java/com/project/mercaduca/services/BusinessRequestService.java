@@ -218,4 +218,10 @@ public class BusinessRequestService {
 
         return businessRequestRepository.findByStatusContainingIgnoreCase(status, pageable);
     }
+
+    public BusinessRequest getRequestById(Long id) {
+        return businessRequestRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
+    }
+
 }

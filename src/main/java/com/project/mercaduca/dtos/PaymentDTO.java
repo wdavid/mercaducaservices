@@ -1,16 +1,16 @@
 package com.project.mercaduca.dtos;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import java.time.LocalDate;
 
-@Getter @Setter
-public class PaymentResponseDTO {
+@Data
+public class PaymentDTO {
     private Long id;
     private LocalDate date;
+    private LocalDate expectedDate;
     private Double amount;
     private String status;
-    private String remarks;
-    private String userName;
+    private String paymentMethod;
+    private String kindOfPayment;
 }

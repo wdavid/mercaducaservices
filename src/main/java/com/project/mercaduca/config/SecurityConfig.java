@@ -70,6 +70,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/major/*/majors").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/contract/create").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/contract/payment").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/contract/create-with-payments").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/admin/products/*").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/admin/business/*").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/admin/business/businesses/disable/*").hasRole("ADMIN")

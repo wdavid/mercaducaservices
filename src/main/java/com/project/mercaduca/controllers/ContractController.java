@@ -1,16 +1,17 @@
 package com.project.mercaduca.controllers;
 
-import com.project.mercaduca.dtos.ContractCreateDTO;
-import com.project.mercaduca.dtos.ContractRequestDTO;
-import com.project.mercaduca.dtos.PaymentCreateDTO;
+import com.project.mercaduca.dtos.*;
 import com.project.mercaduca.enums.PaymentFrequency;
 import com.project.mercaduca.enums.PaymentMethod;
 import com.project.mercaduca.models.Contract;
+import com.project.mercaduca.models.Payment;
 import com.project.mercaduca.services.ContractService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/contract")
@@ -30,7 +31,6 @@ public class ContractController {
         Contract newContract = contractService.createContract(
                 request.getUserId(),
                 request.getAmount(),
-                request.getKindOfPayment(),
                 request.getPaymentMethod(),
                 request.getPaymentFrequency()
         );
@@ -38,21 +38,20 @@ public class ContractController {
         return ResponseEntity.ok("Contrato creado exitosamente con ID: " + newContract.getId());
     }
 
-    @PostMapping("/payment")
+    @PostMapping("/payment-by-id")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> registrarPago(@RequestBody PaymentCreateDTO request) {
+    public ResponseEntity<?> registrarPagoPorId(
+            @RequestParam Long paymentId,
+            @RequestParam String paymentMethod) {
         try {
-            contractService.registrarPago(
-                    request.getUserId(),
-                    request.getAmount(),
-                    request.getPaymentMethod(),
-                    request.getKindOfPayment()
-            );
+            contractService.registrarPagoAdmin(paymentId, paymentMethod);
             return ResponseEntity.ok("Pago registrado correctamente");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
     }
+
+
 
     @GetMapping("/payment-methods")
     public ResponseEntity<PaymentMethod[]> getPaymentMethods() {
@@ -64,6 +63,17 @@ public class ContractController {
         return ResponseEntity.ok(PaymentFrequency.values());
     }
 
+    @GetMapping("/my-payments")
+    public ResponseEntity<List<PaymentSimpleDTO>> getMyUpcomingPayments() {
+        List<PaymentSimpleDTO> pagos = contractService.getPendingPaymentsForAuthenticatedUser();
+        return ResponseEntity.ok(pagos);
+    }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/user-payments/{userId}")
+    public ResponseEntity<List<PaymentDTO>> getUserPayments(@PathVariable Long userId) {
+        List<PaymentDTO> pagos = contractService.getPaymentsByUserId(userId);
+        return ResponseEntity.ok(pagos);
+    }
 
 }

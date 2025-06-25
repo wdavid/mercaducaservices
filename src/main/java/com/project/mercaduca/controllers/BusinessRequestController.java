@@ -171,4 +171,30 @@ public class BusinessRequestController {
         return ResponseEntity.ok(requests);
     }
 
+    @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<BusinessRequestResponseDTO> getRequestById(@PathVariable Long id) {
+        BusinessRequest request = businessRequestService.getRequestById(id);
+
+        BusinessRequestResponseDTO dto = new BusinessRequestResponseDTO();
+        dto.setId(request.getId());
+        dto.setUrlLogo(request.getUrlLogo());
+        dto.setBusinessName(request.getBusinessName());
+        dto.setDescription(request.getDescription());
+        dto.setStatus(request.getStatus());
+        dto.setSubmissionDate(request.getSubmissionDate());
+        dto.setSector(request.getSector());
+        dto.setProductType(request.getProductType());
+        dto.setPriceRange(request.getPriceRange());
+        dto.setFacebook(request.getFacebook());
+        dto.setInstagram(request.getInstagram());
+        dto.setPhone(request.getPhone());
+        dto.setUserName(request.getUserName());
+        dto.setUserLastName(request.getUserLastName());
+        dto.setUserEmail(request.getUserEmail());
+        dto.setEntrepeneurKind(request.getEntrepeneurKind());
+
+        return ResponseEntity.ok(dto);
+    }
+
 }
