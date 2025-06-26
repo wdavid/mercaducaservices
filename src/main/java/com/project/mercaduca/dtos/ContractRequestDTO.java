@@ -10,6 +10,7 @@ public class ContractRequestDTO {
     private String businessName;
     private String phone;
     private String urlLogo;
+    private String statusBusiness;
 
 
     private String ownerName;

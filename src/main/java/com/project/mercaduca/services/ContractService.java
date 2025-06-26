@@ -1,6 +1,7 @@
 package com.project.mercaduca.services;
 
 import com.project.mercaduca.dtos.ContractRequestDTO;
+import com.project.mercaduca.dtos.ContractResponseDTO;
 import com.project.mercaduca.dtos.PaymentDTO;
 import com.project.mercaduca.dtos.PaymentSimpleDTO;
 import com.project.mercaduca.models.Contract;
@@ -191,6 +192,89 @@ public class ContractService {
         }).toList();
     }
 
+
+    public ContractResponseDTO mapToDTO(Contract contract) {
+        ContractResponseDTO dto = new ContractResponseDTO();
+        dto.setId(contract.getId());
+        dto.setStartDate(contract.getStartDate());
+        dto.setEndDate(contract.getEndDate());
+        dto.setStatus(contract.getStatus());
+        dto.setRenewalRequested(contract.getRenewalRequested());
+        dto.setNextPaymentDate(contract.getNextPaymentDate());
+        dto.setPaymentFrequency(contract.getPaymentFrequency());
+        dto.setUserName(contract.getUser().getName());
+
+        if (contract.getUser().getBusiness() != null) {
+            dto.setBusinessName(contract.getUser().getBusiness().getBusinessName());
+        }
+
+        return dto;
+    }
+
+    public Contract renovarContrato(Long userId, Double amount, String paymentMethod) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        Contract contrato = contractRepository.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("Contrato no encontrado"));
+
+        if (!"ACTIVO".equalsIgnoreCase(contrato.getStatus())) {
+            throw new IllegalStateException("Solo se pueden renovar contratos activos");
+        }
+
+        LocalDate fechaHoy = LocalDate.now();
+
+        if (contrato.getEndDate().isAfter(fechaHoy)) {
+            throw new IllegalStateException("El contrato aún no ha finalizado");
+        }
+
+        // Renovación: extender por otro período de 3 meses
+        LocalDate nuevaFechaInicio = fechaHoy;
+        LocalDate nuevaFechaFin = nuevaFechaInicio.plusMonths(3);
+
+        contrato.setStartDate(nuevaFechaInicio);
+        contrato.setEndDate(nuevaFechaFin);
+        contrato.setStatus("ACTIVO");
+        contrato.setRenewalRequested(false);
+
+        String frecuencia = contrato.getPaymentFrequency();
+        if ("MENSUAL".equalsIgnoreCase(frecuencia)) {
+            for (int i = 0; i < 3; i++) {
+                LocalDate fechaEsperada = nuevaFechaInicio.plusMonths(i);
+
+                Payment nuevoPago = new Payment();
+                nuevoPago.setUser(user);
+                nuevoPago.setExpectedDate(fechaEsperada);
+                nuevoPago.setAmount(amount);
+                nuevoPago.setStatus(i == 0 ? "PAGADO" : "PENDIENTE");
+                nuevoPago.setKindOfPayment("MENSUAL");
+                nuevoPago.setPaymentMethod(i == 0 ? paymentMethod : null);
+                nuevoPago.setDate(i == 0 ? fechaHoy : null);
+
+                paymentRepository.save(nuevoPago);
+            }
+
+            contrato.setNextPaymentDate(nuevaFechaInicio.plusMonths(1));
+
+        } else if ("TRIMESTRAL".equalsIgnoreCase(frecuencia)) {
+            Payment nuevoPago = new Payment();
+            nuevoPago.setUser(user);
+            nuevoPago.setExpectedDate(nuevaFechaInicio);
+            nuevoPago.setAmount(amount);
+            nuevoPago.setStatus("PAGADO");
+            nuevoPago.setKindOfPayment("TRIMESTRAL");
+            nuevoPago.setPaymentMethod(paymentMethod);
+            nuevoPago.setDate(fechaHoy);
+
+            paymentRepository.save(nuevoPago);
+
+            contrato.setNextPaymentDate(null);
+        } else {
+            throw new IllegalArgumentException("Frecuencia de pago no válida");
+        }
+
+        return contractRepository.save(contrato);
+    }
 
 
 }

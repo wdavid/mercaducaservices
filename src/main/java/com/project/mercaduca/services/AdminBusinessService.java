@@ -73,6 +73,7 @@ public class AdminBusinessService {
             dto.setBusinessName(user.getBusiness().getBusinessName());
             dto.setPhone(user.getBusiness().getPhone());
             dto.setUrlLogo(user.getBusiness().getUrlLogo());
+            dto.setStatusBusiness(user.getBusiness().getStatus());
 
             User owner = user.getBusiness().getOwner();
             if (owner != null) {

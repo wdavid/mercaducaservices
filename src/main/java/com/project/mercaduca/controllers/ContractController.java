@@ -76,4 +76,14 @@ public class ContractController {
         return ResponseEntity.ok(pagos);
     }
 
+    @PostMapping("/renew/{userId}")
+    public ResponseEntity<?> renovarContrato(
+            @PathVariable Long userId,
+            @RequestParam Double amount,
+            @RequestParam String paymentMethod) {
+
+        Contract contratoRenovado = contractService.renovarContrato(userId, amount, paymentMethod);
+        return ResponseEntity.ok(contractService.mapToDTO(contratoRenovado));
+    }
+
 }

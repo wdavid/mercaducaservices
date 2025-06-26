@@ -28,4 +28,8 @@ public class Payment {
     @ManyToOne
     @JoinColumn(name = "users_id")
     private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "contract_id")
+    private Contract contract;
 }

@@ -11,5 +11,9 @@ public class ContractResponseDTO {
     private LocalDate startDate;
     private LocalDate endDate;
     private String status;
+    private Boolean renewalRequested;
+    private LocalDate nextPaymentDate;
+    private String paymentFrequency;
     private String userName;
+    private String businessName;
 }
