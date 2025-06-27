@@ -145,13 +145,36 @@ public class BusinessRequestService {
 
         // Enviar correo
         String htmlMessage = "<html>" +
-                "<body style='font-family: Arial, sans-serif;'>" +
+                "<head>" +
+                "<style>" +
+                "body {font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 0px;}" +
+                ".card {background-color: #ffffff; border-radius: 10px; padding: 5px; max-width: 600px; margin: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1);}" +
+                ".header {background-color: rgb(99, 107, 101); padding: 10px; text-align: center; border-radius: 10px 10px 0 0;}" +
+                ".header h2, .footer p {color: white; margin: 0;}" +
+                ".content {padding: 20px;}" +
+                "table {width: 100%; border-collapse: collapse; margin: 15px 0;}" +
+                "table td {padding: 10px; border: 1px solid #ddd; font-size: 16px;}" +
+                "table td.label {background-color: #f0f0f0; font-weight: bold; width: 40%;}" +
+                ".footer {background-color: rgb(99, 107, 101); padding: 10px; text-align: center; border-radius: 0 0 10px 10px;}" +
+                "</style>" +
+                "</head>" +
+                "<body>" +
+                "<div class='card'>" +
+                "<div class='header'>" +
                 "<h2>Bienvenido a Mercaduca 🎉</h2>" +
-                "<p>Tu usuario es: <strong>" + user.getMail() + "</strong></p>" +
-                "<p>Tu contraseña temporal es: <strong>" + tempPassword + "</strong></p>" +
-                "<p>Por favor, cambia tu contraseña después de iniciar sesión.</p>" +
-                "<br>" +
+                "</div>" +
+                "<div class='content'>" +
+                "<p>¡Nos alegra darte la bienvenida! Aquí están tus credenciales:</p>" +
+                "<table>" +
+                "<tr><td class='label'>Usuario</td><td>" + user.getMail() + "</td></tr>" +
+                "<tr><td class='label'>Contraseña</td><td>" + tempPassword + "</td></tr>" +
+                "</table>" +
+                "<p>Por favor, te invitamos a nuestras oficinas para la creación de tu contrato.</p>" +
+                "</div>" +
+                "<div class='footer'>" +
                 "<p>Saludos,<br>El equipo de Mercaduca</p>" +
+                "</div>" +
+                "</div>" +
                 "</body>" +
                 "</html>";
 
@@ -176,15 +199,34 @@ public class BusinessRequestService {
         businessRequestRepository.save(request);
 
         String htmlRejection = "<html>" +
-                "<body style='font-family: Arial, sans-serif;'>" +
+                "<head>" +
+                "<style>" +
+                "body {font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 0px;}" +
+                ".card {background-color: #ffffff; border-radius: 10px; padding: 5px; max-width: 600px; margin: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1);}" +
+                ".header {background-color: #b02a37; padding: 10px; text-align: center; border-radius: 10px 10px 0 0;}" +
+                ".header h2, .footer p {color: white; margin: 0;}" +
+                ".content {padding: 20px;}" +
+                ".reason-box {background-color: #ffe5e5; border-left: 5px solid #b02a37; padding: 10px 15px; margin: 15px 0; font-style: italic; color: #900;}" +
+                ".footer {background-color: #b02a37; padding: 10px; text-align: center; border-radius: 0 0 10px 10px;}" +
+                "</style>" +
+                "</head>" +
+                "<body>" +
+                "<div class='card'>" +
+                "<div class='header'>" +
                 "<h2>Solicitud Rechazada 😢</h2>" +
+                "</div>" +
+                "<div class='content'>" +
                 "<p>Lamentamos informarte que tu solicitud ha sido <strong>rechazada</strong>.</p>" +
-                "<p>Motivo: <em>" + reason + "</em></p>" +
-                "<br>" +
-                "<p>Si tienes dudas, contáctanos.</p>" +
+                "<div class='reason-box'>Motivo: " + reason + "</div>" +
+                "<p>Si tienes dudas o deseas más información, no dudes en contactarnos.</p>" +
+                "</div>" +
+                "<div class='footer'>" +
                 "<p>Saludos,<br>El equipo de Mercaduca</p>" +
+                "</div>" +
+                "</div>" +
                 "</body>" +
                 "</html>";
+
 
         emailService.sendHtml(
                 request.getUserEmail(),

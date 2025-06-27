@@ -7,7 +7,7 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-
+import org.springframework.security.core.GrantedAuthority;
 import javax.crypto.SecretKey;
 import java.util.Base64;
 import java.util.Date;
@@ -26,8 +26,15 @@ public class JwtService {
     }
 
     public String generateToken(UserDetails userDetails) {
+
+        String role = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .findFirst()
+                .orElse("ROLE_USER");
+
         return Jwts.builder()
                 .setSubject(userDetails.getUsername())
+                .claim("role", role)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 día
                 .signWith(secretKey, SignatureAlgorithm.HS256)
@@ -56,3 +63,4 @@ public class JwtService {
                 .before(new Date());
     }
 }
+
