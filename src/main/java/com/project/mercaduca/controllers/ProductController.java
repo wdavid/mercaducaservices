@@ -57,7 +57,7 @@ public class ProductController {
 
             productService.createProduct(dto);
 
-            git aMap<String, Object> response = new HashMap<>();
+            Map<String, Object> response = new HashMap<>();
             response.put("message", "Producto enviado para aprobación.");
             response.put("success", true);
 
