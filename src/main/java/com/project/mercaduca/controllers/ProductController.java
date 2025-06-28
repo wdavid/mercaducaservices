@@ -17,9 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/products")
@@ -59,11 +57,21 @@ public class ProductController {
 
             productService.createProduct(dto);
 
-            return ResponseEntity.ok("Producto enviado para aprobación.");
+            git aMap<String, Object> response = new HashMap<>();
+            response.put("message", "Producto enviado para aprobación.");
+            response.put("success", true);
+
+            return ResponseEntity.ok(response);
+
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error al crear producto: " + e.getMessage());
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Error al crear producto: " + e.getMessage());
+            response.put("success", false);
+
+            return ResponseEntity.badRequest().body(response);
         }
     }
+
 
     @GetMapping("/business/{businessId}/approved")
     public ResponseEntity<?> getBusinessWithApprovedProducts(@PathVariable Long businessId) {

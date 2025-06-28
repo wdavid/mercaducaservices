@@ -16,4 +16,5 @@ public class BusinessApprovedDTO {
     private String ownerEmail;
     private String major;
     private String faculty;
+    private Boolean hasPendingProducts;
 }

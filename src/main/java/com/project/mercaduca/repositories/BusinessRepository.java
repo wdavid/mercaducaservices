@@ -26,6 +26,8 @@ public interface BusinessRepository extends JpaRepository<Business, Long> {
 
     Optional<Business> findById(Long businessId);
     Optional<Business> findByOwner(User owner);
+
+    @EntityGraph(attributePaths = {"products"})
     @Query("""
     SELECT b FROM Business b
     WHERE (:statuses IS NULL OR b.status IN :statuses)
@@ -38,10 +40,23 @@ public interface BusinessRepository extends JpaRepository<Business, Long> {
         )) OR
         (:tienenContrato IS NULL)
     )
+    AND (
+        (:tienenProductosPendientes = true AND EXISTS (
+            SELECT p FROM Product p WHERE p.business = b AND p.status = 'PENDIENTE'
+        )) OR
+        (:tienenProductosPendientes = false AND NOT EXISTS (
+            SELECT p FROM Product p WHERE p.business = b AND p.status = 'PENDIENTE'
+        )) OR
+        (:tienenProductosPendientes IS NULL)
+    )
 """)
-    List<Business> findByStatusesAndContrato(
+    Page<Business> findByStatusesContratoAndProductosPendientes(
             @Param("statuses") List<String> statuses,
-            @Param("tienenContrato") Boolean tienenContrato
+            @Param("tienenContrato") Boolean tienenContrato,
+            @Param("tienenProductosPendientes") Boolean tienenProductosPendientes,
+            Pageable pageable
     );
+
+
     Optional<Business> findByOwnerId(Long ownerId);
 }

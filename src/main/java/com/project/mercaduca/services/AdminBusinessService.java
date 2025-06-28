@@ -12,6 +12,8 @@ import com.project.mercaduca.repositories.PaymentRepository;
 import com.project.mercaduca.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -42,22 +44,27 @@ public class AdminBusinessService {
     }
 
     @Transactional
-    public List<BusinessApprovedDTO> getFilteredBusinesses(List<String> statuses, Boolean tienenContrato) {
-        List<Business> businesses = businessRepository.findByStatusesAndContrato(statuses, tienenContrato);
+    public Page<BusinessApprovedDTO> getFilteredBusinesses(List<String> statuses, Boolean tienenContrato, Boolean tienenProductosPendientes, Pageable pageable) {
+        Page<Business> businesses = businessRepository.findByStatusesContratoAndProductosPendientes(statuses, tienenContrato, tienenProductosPendientes, pageable);
 
-        return businesses.stream().map(business -> {
+        return businesses.map(business -> {
             User owner = business.getOwner();
+            boolean hasPendingProducts = business.getProducts() != null &&
+                    business.getProducts().stream().anyMatch(p -> "PENDIENTE".equalsIgnoreCase(p.getStatus()));
+
             return new BusinessApprovedDTO(
-                    business.getOwner().getId(),
+                    owner.getId(),
                     business.getUrlLogo(),
                     business.getBusinessName(),
                     owner.getName() + " " + owner.getLastName(),
                     owner.getMail(),
                     owner.getMajor(),
-                    owner.getFaculty()
+                    owner.getFaculty(),
+                    hasPendingProducts
             );
-        }).collect(Collectors.toList());
+        });
     }
+
 
     @Transactional
     public ContractRequestDTO getContractById(Long userId) {
