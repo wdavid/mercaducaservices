@@ -1,9 +1,6 @@
 package com.project.mercaduca.controllers;
 
-import com.project.mercaduca.dtos.BusinessRequestCreateDTO;
-import com.project.mercaduca.dtos.BusinessRequestResponseDTO;
-import com.project.mercaduca.dtos.BusinessSummaryDTO;
-import com.project.mercaduca.dtos.RejectRequestDTO;
+import com.project.mercaduca.dtos.*;
 import com.project.mercaduca.enums.EntrepeneurKind;
 import com.project.mercaduca.enums.Gender;
 import com.project.mercaduca.models.BusinessRequest;
@@ -139,15 +136,16 @@ public class BusinessRequestController {
 
     @GetMapping("/filter")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Page<BusinessRequest>> getBusinessRequests(
+    public ResponseEntity<Page<BusinessContractRequestDTO>> getBusinessRequests(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String status,
             @RequestParam(defaultValue = "desc") String sortDirection
     ) {
-        Page<BusinessRequest> requests = businessRequestService.getBusinessRequestsByStatusAndOrder(page, size, status, sortDirection);
+        Page<BusinessContractRequestDTO> requests = businessRequestService.getBusinessRequestsByStatusAndOrder(page, size, status, sortDirection);
         return ResponseEntity.ok(requests);
     }
+
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")

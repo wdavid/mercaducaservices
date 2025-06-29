@@ -1,14 +1,11 @@
 package com.project.mercaduca.services;
 
+import com.project.mercaduca.dtos.BusinessContractRequestDTO;
 import com.project.mercaduca.dtos.BusinessRequestCreateDTO;
 import com.project.mercaduca.dtos.BusinessSummaryDTO;
-import com.project.mercaduca.models.Business;
-import com.project.mercaduca.models.BusinessRequest;
-import com.project.mercaduca.models.User;
-import com.project.mercaduca.repositories.BusinessRepository;
-import com.project.mercaduca.repositories.BusinessRequestRepository;
-import com.project.mercaduca.repositories.RoleRepository;
-import com.project.mercaduca.repositories.UserRepository;
+import com.project.mercaduca.models.*;
+import com.project.mercaduca.repositories.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,8 +14,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class BusinessRequestService {
@@ -28,6 +25,12 @@ public class BusinessRequestService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final BusinessRepository businessRepository;
+
+    @Autowired
+    private FacultyRepository facultyRepository;
+
+    @Autowired
+    private MajorRepository majorRepository;
 
     // Constructor actualizado
     public BusinessRequestService(
@@ -247,7 +250,7 @@ public class BusinessRequestService {
         businessRequestRepository.deleteById(requestId);
     }
 
-    public Page<BusinessRequest> getBusinessRequestsByStatusAndOrder(
+    public Page<BusinessContractRequestDTO> getBusinessRequestsByStatusAndOrder(
             int page,
             int size,
             String status,
@@ -258,16 +261,104 @@ public class BusinessRequestService {
 
         Pageable pageable = PageRequest.of(page, size, sort);
 
+        Page<BusinessRequest> requests;
+
         if (status == null || status.isBlank()) {
-            return businessRequestRepository.findAll(pageable);
+            requests = businessRequestRepository.findAll(pageable);
+        } else {
+            requests = businessRequestRepository.findByStatusContainingIgnoreCase(status, pageable);
         }
 
-        return businessRequestRepository.findByStatusContainingIgnoreCase(status, pageable);
+        Set<Long> facultyIds = new HashSet<>();
+        Set<Long> majorIds = new HashSet<>();
+
+        for (BusinessRequest req : requests.getContent()) {
+            if (isNumeric(req.getUserFaculty())) {
+                facultyIds.add(Long.valueOf(req.getUserFaculty()));
+            }
+            if (isNumeric(req.getUserMajor())) {
+                majorIds.add(Long.valueOf(req.getUserMajor()));
+            }
+        }
+
+
+        Map<Long, String> facultyNames = facultyRepository.findAllById(facultyIds).stream()
+                .collect(Collectors.toMap(Faculty::getId, Faculty::getName));
+
+        Map<Long, String> majorNames = majorRepository.findAllById(majorIds).stream()
+                .collect(Collectors.toMap(Major::getId, Major::getName));
+
+        return requests.map(req -> mapToDTO(req, facultyNames, majorNames));
     }
+
+
 
     public BusinessRequest getRequestById(Long id) {
         return businessRequestRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
     }
+
+    public BusinessContractRequestDTO mapToDTO(BusinessRequest request,
+                                               Map<Long, String> facultyNames,
+                                               Map<Long, String> majorNames) {
+        BusinessContractRequestDTO dto = new BusinessContractRequestDTO();
+        dto.setId(request.getId());
+        dto.setBusinessName(request.getBusinessName());
+        dto.setDescription(request.getDescription());
+        dto.setStatus(request.getStatus());
+        dto.setSubmissionDate(request.getSubmissionDate());
+        dto.setReviewDate(request.getReviewDate());
+        dto.setSector(request.getSector());
+        dto.setProductType(request.getProductType());
+        dto.setPriceRange(request.getPriceRange());
+        dto.setFacebook(request.getFacebook());
+        dto.setInstagram(request.getInstagram());
+        dto.setPhone(request.getPhone());
+        dto.setUrlLogo(request.getUrlLogo());
+
+        dto.setUserName(request.getUserName());
+        dto.setUserLastName(request.getUserLastName());
+        dto.setUserEmail(request.getUserEmail());
+        dto.setUserGender(request.getUserGender());
+        dto.setUserBirthDate(request.getUserBirthDate());
+        dto.setEntrepeneurKind(request.getEntrepeneurKind());
+
+        // Faculty
+        if (request.getUserFaculty() != null) {
+            String facultyValue = request.getUserFaculty();
+            if (isNumeric(facultyValue)) {
+                Long id = Long.valueOf(facultyValue);
+                dto.setFacultyName(facultyNames.getOrDefault(id, "Desconocida"));
+            } else {
+                dto.setFacultyName(facultyValue);
+            }
+        }
+
+        // Major
+        if (request.getUserMajor() != null) {
+            String majorValue = request.getUserMajor();
+            if (isNumeric(majorValue)) {
+                Long id = Long.valueOf(majorValue);
+                dto.setMajorName(majorNames.getOrDefault(id, "Desconocida"));
+            } else {
+                dto.setMajorName(majorValue);
+            }
+        }
+
+        return dto;
+    }
+
+    public boolean isNumeric(String str) {
+        if (str == null) {
+            return false;
+        }
+        try {
+            Long.parseLong(str);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
 
 }
