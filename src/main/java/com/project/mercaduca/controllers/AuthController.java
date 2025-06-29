@@ -42,7 +42,7 @@ public class AuthController {
         final String jwt = jwtService.generateToken(userDetails);
 
         //Cuando lo deployee en Vercel
-        ResponseCookie cookie = ResponseCookie.from("jwt", jwt)
+        /*ResponseCookie cookie = ResponseCookie.from("jwt", jwt)
                 .httpOnly(true)
                 .path("/")
                 .domain("mercaduca-c132791fdef9.herokuapp.com")
@@ -50,15 +50,15 @@ public class AuthController {
                 .sameSite("None")
                 .secure(true)
                 .build();
-        /*
+        */
         ResponseCookie cookie = ResponseCookie.from("jwt", jwt)
                 .httpOnly(true)
-                .secure(false)
+                .secure(true)
                 .path("/")
                 .maxAge(24 * 60 * 60)
-                .sameSite("Lax")
+                .sameSite("None")
                 .build();
-        */
+
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
         return ResponseEntity.ok(Map.of("message", "Login exitoso"));
