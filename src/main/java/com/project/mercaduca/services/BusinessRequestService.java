@@ -5,6 +5,7 @@ import com.project.mercaduca.dtos.BusinessRequestCreateDTO;
 import com.project.mercaduca.dtos.BusinessSummaryDTO;
 import com.project.mercaduca.models.*;
 import com.project.mercaduca.repositories.*;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,11 +27,14 @@ public class BusinessRequestService {
     private final EmailService emailService;
     private final BusinessRepository businessRepository;
 
+    @Getter
     @Autowired
     private FacultyRepository facultyRepository;
 
+    @Getter
     @Autowired
     private MajorRepository majorRepository;
+
 
     // Constructor actualizado
     public BusinessRequestService(
