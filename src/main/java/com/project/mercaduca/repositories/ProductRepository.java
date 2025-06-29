@@ -11,6 +11,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByBusinessAndStatus(Business business, String status);
     List<Product> findByBusiness(Business business);
     List<Product> findByStatusInAndBusinessId(List<String> statuses, Long businessId);
+    List<Product> findByStatusInAndBusiness(List<String> statuses, Business business);
     long countByBusiness(Business business);
     List<Product> findByBusinessAndStatusNot(Business business, String status);
     long countByBusinessAndStatusNot(Business business, String status);

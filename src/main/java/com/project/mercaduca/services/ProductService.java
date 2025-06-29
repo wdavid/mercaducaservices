@@ -140,9 +140,17 @@ public class ProductService {
     }
 
 
-    public List<ProductResponseDTO> getPendingProducts(Long businessId) {
+    public List<ProductResponseDTO> getPendingProducts(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        Business business = user.getBusiness();
+        if (business == null) {
+            throw new RuntimeException("El usuario no tiene un negocio asociado");
+        }
+
         List<String> statuses = List.of("PENDIENTE", "RECHAZADO");
-        List<Product> products = productRepository.findByStatusInAndBusinessId(statuses, businessId);
+        List<Product> products = productRepository.findByStatusInAndBusiness(statuses, business);
 
         return products.stream()
                 .map(product -> new ProductResponseDTO(
@@ -158,6 +166,7 @@ public class ProductService {
                 ))
                 .collect(Collectors.toList());
     }
+
 
     public List<ProductResponseDTO> getProductsByBusiness(Long businessId) {
         Business business = businessRepository.findById(businessId)
