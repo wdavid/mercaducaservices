@@ -45,6 +45,7 @@ public class AuthController {
         ResponseCookie cookie = ResponseCookie.from("jwt", jwt)
                 .httpOnly(true)
                 .path("/")
+                .domain("mercaduca-c132791fdef9.herokuapp.com")
                 .maxAge(24 * 60 * 60)
                 .sameSite("None")
                 .secure(true)
