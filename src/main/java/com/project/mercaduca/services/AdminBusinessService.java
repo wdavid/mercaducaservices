@@ -2,14 +2,8 @@ package com.project.mercaduca.services;
 
 import com.project.mercaduca.dtos.BusinessApprovedDTO;
 import com.project.mercaduca.dtos.ContractRequestDTO;
-import com.project.mercaduca.models.Business;
-import com.project.mercaduca.models.Contract;
-import com.project.mercaduca.models.Payment;
-import com.project.mercaduca.models.User;
-import com.project.mercaduca.repositories.BusinessRepository;
-import com.project.mercaduca.repositories.ContractRepository;
-import com.project.mercaduca.repositories.PaymentRepository;
-import com.project.mercaduca.repositories.UserRepository;
+import com.project.mercaduca.models.*;
+import com.project.mercaduca.repositories.*;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -17,7 +11,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,6 +31,12 @@ public class AdminBusinessService {
     @Autowired
     private ContractRepository contractRepository;
 
+    @Autowired
+    private FacultyRepository facultyRepository;
+
+    @Autowired
+    private MajorRepository majorRepository;
+
     @Transactional
     public void deleteAnyBusiness(Long businessId) {
         Business business = businessRepository.findById(businessId)
@@ -47,8 +50,44 @@ public class AdminBusinessService {
     public Page<BusinessApprovedDTO> getFilteredBusinesses(List<String> statuses, Boolean tienenContrato, Boolean tienenProductosPendientes, Pageable pageable) {
         Page<Business> businesses = businessRepository.findByStatusesContratoAndProductosPendientes(statuses, tienenContrato, tienenProductosPendientes, pageable);
 
+        Set<Long> facultyIds = new HashSet<>();
+        Set<Long> majorIds = new HashSet<>();
+
+        for (Business b : businesses.getContent()) {
+            User owner = b.getOwner();
+            if (isNumeric(owner.getFaculty())) {
+                facultyIds.add(Long.valueOf(owner.getFaculty()));
+            }
+            if (isNumeric(owner.getMajor())) {
+                majorIds.add(Long.valueOf(owner.getMajor()));
+            }
+        }
+
+        Map<Long, String> facultyNames = facultyRepository.findAllById(facultyIds).stream()
+                .collect(Collectors.toMap(Faculty::getId, Faculty::getName));
+
+        Map<Long, String> majorNames = majorRepository.findAllById(majorIds).stream()
+                .collect(Collectors.toMap(Major::getId, Major::getName));
+
         return businesses.map(business -> {
             User owner = business.getOwner();
+
+            String facultyValue = owner.getFaculty();
+            String facultyName;
+            if (facultyValue != null && isNumeric(facultyValue)) {
+                facultyName = facultyNames.getOrDefault(Long.valueOf(facultyValue), "Desconocida");
+            } else {
+                facultyName = facultyValue != null ? facultyValue : "Desconocida";
+            }
+
+            String majorValue = owner.getMajor();
+            String majorName;
+            if (majorValue != null && isNumeric(majorValue)) {
+                majorName = majorNames.getOrDefault(Long.valueOf(majorValue), "Desconocida");
+            } else {
+                majorName = majorValue != null ? majorValue : "Desconocida";
+            }
+
             boolean hasPendingProducts = business.getProducts() != null &&
                     business.getProducts().stream().anyMatch(p -> "PENDIENTE".equalsIgnoreCase(p.getStatus()));
 
@@ -58,11 +97,23 @@ public class AdminBusinessService {
                     business.getBusinessName(),
                     owner.getName() + " " + owner.getLastName(),
                     owner.getMail(),
-                    owner.getMajor(),
-                    owner.getFaculty(),
+                    majorName,
+                    facultyName,
                     hasPendingProducts
             );
         });
+    }
+
+    public boolean isNumeric(String str) {
+        if (str == null) {
+            return false;
+        }
+        try {
+            Long.parseLong(str);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
 
