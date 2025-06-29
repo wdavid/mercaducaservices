@@ -44,11 +44,10 @@ public class AuthController {
         //Cuando lo deployee en Vercel
         /*ResponseCookie cookie = ResponseCookie.from("jwt", jwt)
                 .httpOnly(true)
+                .secure(true)
                 .path("/")
-                .domain("mercaduca-c132791fdef9.herokuapp.com")
                 .maxAge(24 * 60 * 60)
                 .sameSite("None")
-                .secure(true)
                 .build();
         */
         ResponseCookie cookie = ResponseCookie.from("jwt", jwt)
