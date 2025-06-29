@@ -33,11 +33,13 @@ public class AdminBusinessController {
             @RequestParam(required = false) List<String> statuses,
             @RequestParam(required = false) Boolean tienenContrato,
             @RequestParam(required = false) Boolean tienenProductosPendientes,
+            @RequestParam(required = false) String search,
             Pageable pageable
     ) {
-        Page<BusinessApprovedDTO> result = adminBusinessService.getFilteredBusinesses(statuses, tienenContrato, tienenProductosPendientes, pageable);
+        Page<BusinessApprovedDTO> result = adminBusinessService.getFilteredBusinesses(statuses, tienenContrato, tienenProductosPendientes, search, pageable);
         return ResponseEntity.ok(result);
     }
+
 
 
 

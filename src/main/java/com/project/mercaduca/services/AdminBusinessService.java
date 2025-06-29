@@ -47,8 +47,14 @@ public class AdminBusinessService {
     }
 
     @Transactional
-    public Page<BusinessApprovedDTO> getFilteredBusinesses(List<String> statuses, Boolean tienenContrato, Boolean tienenProductosPendientes, Pageable pageable) {
-        Page<Business> businesses = businessRepository.findByStatusesContratoAndProductosPendientes(statuses, tienenContrato, tienenProductosPendientes, pageable);
+    public Page<BusinessApprovedDTO> getFilteredBusinesses(List<String> statuses, Boolean tienenContrato, Boolean tienenProductosPendientes, String search, Pageable pageable) {
+        Page<Business> businesses = businessRepository.findByStatusesContratoProductosPendientesAndSearch(
+                statuses,
+                tienenContrato,
+                tienenProductosPendientes,
+                (search == null || search.isBlank()) ? null : search,
+                pageable
+        );
 
         Set<Long> facultyIds = new HashSet<>();
         Set<Long> majorIds = new HashSet<>();
