@@ -57,13 +57,11 @@ public interface BusinessRepository extends JpaRepository<Business, Long> {
         )) OR
         (:tienenProductosPendientes IS NULL)
     )
-    AND (:search IS NULL OR LOWER(b.businessName) LIKE LOWER(CONCAT('%', :search, '%')))
 """)
-    Page<Business> findByStatusesContratoProductosPendientesAndSearch(
+    Page<Business> findByStatusesContratoAndProductosPendientes(
             @Param("statuses") List<String> statuses,
             @Param("tienenContrato") Boolean tienenContrato,
             @Param("tienenProductosPendientes") Boolean tienenProductosPendientes,
-            @Param("search") String search,
             Pageable pageable
     );
 
