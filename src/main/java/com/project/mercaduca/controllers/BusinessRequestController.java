@@ -9,9 +9,13 @@ import com.project.mercaduca.enums.Gender;
 import com.project.mercaduca.models.BusinessRequest;
 import com.project.mercaduca.services.BusinessRequestService;
 import com.project.mercaduca.services.CloudinaryService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -46,47 +50,14 @@ public class BusinessRequestController {
         return ResponseEntity.ok(EntrepeneurKind.values());
     }
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createRequest(
-            @RequestParam(value = "logo", required = false) MultipartFile logo,
-            @RequestParam("businessName") String businessName,
-            @RequestParam("description") String description,
-            @RequestParam("sector") String sector,
-            @RequestParam("productType") String productType,
-            @RequestParam("priceRange") String priceRange,
-            @RequestParam("facebook") String facebook,
-            @RequestParam("instagram") String instagram,
-            @RequestParam("phone") String phone,
-            @RequestParam("userName") String userName,
-            @RequestParam("userLastName") String userLastName,
-            @RequestParam("userEmail") String userEmail,
-            @RequestParam("userGender") String userGender,
-            @RequestParam("userBirthDate") String userBirthDate,
-            @RequestParam("userFaculty") String userFaculty,
-            @RequestParam("userMajor") String userMajor,
-            @RequestParam("entrepeneurKind") String entrepeneurKind
+            @Valid @ModelAttribute BusinessRequestCreateDTO dto,
+            @RequestParam(value = "logo", required = false) MultipartFile logo
     ) {
         try {
             String logoUrl = (logo != null && !logo.isEmpty()) ? cloudinaryService.uploadImage(logo) : null;
-
-            BusinessRequestCreateDTO dto = new BusinessRequestCreateDTO();
-            dto.setBusinessName(businessName);
-            dto.setDescription(description);
-            dto.setSector(sector);
-            dto.setProductType(productType);
-            dto.setPriceRange(priceRange);
-            dto.setFacebook(facebook);
-            dto.setInstagram(instagram);
-            dto.setPhone(phone);
             dto.setUrlLogo(logoUrl);
-            dto.setUserName(userName);
-            dto.setUserLastName(userLastName);
-            dto.setUserEmail(userEmail);
-            dto.setUserGender(userGender);
-            dto.setUserBirthDate(LocalDate.parse(userBirthDate));
-            dto.setUserFaculty(userFaculty);
-            dto.setUserMajor(userMajor);
-            dto.setEntrepeneurKind(entrepeneurKind);
 
             businessRequestService.createBusinessRequest(dto);
 
@@ -102,7 +73,6 @@ public class BusinessRequestController {
                     .body(Map.of("message", "Ocurrió un error inesperado al crear la solicitud."));
         }
     }
-
 
 
     @GetMapping
@@ -150,9 +120,15 @@ public class BusinessRequestController {
     }
 
 
+
     @GetMapping("/approved-summary")
-    public List<BusinessSummaryDTO> getApprovedBusinessSummaries() {
-        return businessRequestService.getApprovedBusinessSummaries();
+    public Page<BusinessSummaryDTO> getApprovedBusinessSummaries(
+            @RequestParam(value = "search", required = false) String searchTerm,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        return businessRequestService.getApprovedBusinessSummaries(searchTerm, pageable);
     }
 
     @DeleteMapping("/{id}")

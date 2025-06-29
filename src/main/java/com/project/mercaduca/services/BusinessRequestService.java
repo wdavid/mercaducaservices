@@ -235,9 +235,13 @@ public class BusinessRequestService {
         );
     }
 
-    public List<BusinessSummaryDTO> getApprovedBusinessSummaries() {
-        return businessRequestRepository.findApprovedBusinessSummaries();
+    public Page<BusinessSummaryDTO> getApprovedBusinessSummaries(String searchTerm, Pageable pageable) {
+        if (searchTerm == null || searchTerm.isEmpty()) {
+            searchTerm = "";
+        }
+        return businessRepository.findActiveBusinessSummariesBySearch(searchTerm, pageable);
     }
+
 
     public void deleteRequest(Long requestId) {
         businessRequestRepository.deleteById(requestId);

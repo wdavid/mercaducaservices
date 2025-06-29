@@ -1,6 +1,7 @@
 package com.project.mercaduca.repositories;
 
 import com.project.mercaduca.dtos.BusinessNameLogoDTO;
+import com.project.mercaduca.dtos.BusinessSummaryDTO;
 import com.project.mercaduca.models.Business;
 import com.project.mercaduca.models.User;
 import org.springframework.data.domain.Page;
@@ -20,6 +21,13 @@ public interface BusinessRepository extends JpaRepository<Business, Long> {
 
     @Query("SELECT b.businessName as businessName, b.urlLogo as urlLogo FROM Business b WHERE b.status = 'APROBADO'")
     List<BusinessNameLogoDTO> findApprovedBusinessNameAndLogo();
+
+    @Query("SELECT new com.project.mercaduca.dtos.BusinessSummaryDTO(b.id, b.businessName, b.urlLogo, b.description) " +
+            "FROM Business b " +
+            "WHERE b.status = 'ACTIVO' " +
+            "AND (LOWER(b.businessName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
+            "OR LOWER(b.description) LIKE LOWER(CONCAT('%', :searchTerm, '%')))")
+    Page<BusinessSummaryDTO> findActiveBusinessSummariesBySearch(@Param("searchTerm") String searchTerm, Pageable pageable);
 
     @EntityGraph(attributePaths = {"products"})
     List<Business> findByStatus(String status);

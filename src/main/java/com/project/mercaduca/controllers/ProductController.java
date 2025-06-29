@@ -10,7 +10,9 @@ import com.project.mercaduca.repositories.UserRepository;
 import com.project.mercaduca.services.CloudinaryService;
 import com.project.mercaduca.services.EmailService;
 import com.project.mercaduca.services.ProductService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -41,37 +43,30 @@ public class ProductController {
     @Autowired
     private EmailService emailService;
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('EMPRENDEDOR')")
     public ResponseEntity<?> createProduct(
-            @RequestParam("image") MultipartFile image,
-            @RequestParam("name") String name,
-            @RequestParam("description") String description,
-            @RequestParam("stock") int stock,
-            @RequestParam("categoryId") Long categoryId,
-            @RequestParam("price") Double price
+            @Valid @ModelAttribute ProductCreateDTO dto,
+            @RequestParam("image") MultipartFile image
     ) {
         try {
             String imageUrl = cloudinaryService.uploadImage(image);
-            ProductCreateDTO dto = new ProductCreateDTO(name, description, stock, imageUrl, categoryId, price);
+            dto.setUrlImage(imageUrl);
 
             productService.createProduct(dto);
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "Producto enviado para aprobación.");
-            response.put("success", true);
-
-            return ResponseEntity.ok(response);
-
+            return ResponseEntity.ok(Map.of(
+                    "message", "Producto enviado para aprobación.",
+                    "success", true
+            ));
         } catch (Exception e) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "Error al crear producto: " + e.getMessage());
-            response.put("success", false);
-
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.badRequest().body(Map.of(
+                    "message", "Error al crear producto: " + e.getMessage(),
+                    "success", false
+            ));
         }
     }
-
+    
 
     @GetMapping("/business/{businessId}/approved")
     public ResponseEntity<?> getBusinessWithApprovedProducts(@PathVariable Long businessId) {

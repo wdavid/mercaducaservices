@@ -15,7 +15,7 @@ import java.util.Optional;
 @Repository
 public interface BusinessRequestRepository extends JpaRepository<BusinessRequest, Long> {
     Optional<BusinessRequest> findByUserEmail(String userEmail);
-    @Query("SELECT new com.project.mercaduca.dtos.BusinessSummaryDTO(b.id, b.businessName, b.urlLogo) FROM Business b WHERE b.status = 'ACTIVO'")
+    @Query("SELECT new com.project.mercaduca.dtos.BusinessSummaryDTO(b.id, b.businessName, b.urlLogo, b.description) FROM Business b WHERE b.status = 'ACTIVO'")
     List<BusinessSummaryDTO> findApprovedBusinessSummaries();
     boolean existsByUserEmailAndStatusIn(String userEmail, List<String> status);
     Page<BusinessRequest> findByStatusContainingIgnoreCase(String status, Pageable pageable);

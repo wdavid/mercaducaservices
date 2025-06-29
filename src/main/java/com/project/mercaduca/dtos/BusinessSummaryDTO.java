@@ -11,4 +11,5 @@ public class BusinessSummaryDTO {
     private Long id;
     private String businessName;
     private String urlLogo;
+    private String description;
 }
